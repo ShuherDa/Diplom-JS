@@ -68,6 +68,10 @@ class Actor{
 			return false;
 		}
 		
+		// дальше слишком много условий
+		// тут простой алгоритм:
+		// если переданный объект выше, ниже, левее или правее данного,
+		// то они не пересекаются
 		if(actor.size.x < 0 || actor.size.y < 0){
 			return false;
 		}
@@ -98,6 +102,7 @@ class Actor{
 
 class Level{
 	constructor(grid=[], actors=[]){
+		// для поиска объектов в массиве есть специальный метод
 		for(const actor of actors){
 			if(actor.type === 'player'){
 				this.player = actor;
@@ -110,6 +115,7 @@ class Level{
 		this.height = grid.length;
 		this.width = 0;
 		
+		// максимальную длину лучше найти с помощью reduce или map + Math.max
 		if(grid.length !== 0){
 			for(const arr of this.grid){
 				if(typeof arr != 'undefined'){
@@ -125,6 +131,7 @@ class Level{
 	}
 	
 	isFinished(){
+		// скобки можно убрать
 		return(this.status != null && this.finishDelay < 0);
 	}
 	
@@ -133,16 +140,23 @@ class Level{
 			throw new Error('Движущийся объект должен иметь тип Actor');
 		}
 		
+		// если this.grid не будет заполнено работать ничего не будет,
+		// поэтому лучше сделать эту проверку один раз в конструкторе
+		// (или использовать значение по-умолчанию),
+		// а не проверять перед каждым использованием
 		if(this.grid === undefined ){
 			return undefined;
 		}
 		
+		// для поиска обхекта в массиве есть специальный метод
 		for(const act of this.actors){
 			if (typeof act !='undefined' && actor.isIntersect(act)){
 				return act;
 			}
 		}
-		return undefined;	
+		// эта строчка ничего не делает,
+		// функция и так возвращает undefined, если не указано иное
+		return undefined;
 	}
 	
 	obstacleAt(pos, size){
@@ -170,23 +184,29 @@ class Level{
 		for (let y = yStart; y < yEnd; y++) {
 			for (let x = xStart; x < xEnd; x++) {
 				const obstacle = this.grid[y][x];
+				// я бы проверил задесь просто if (obstacle) {
 				if (typeof obstacle !== 'undefined') {
 					return obstacle;
 				}
 			}
 		}
+		// строчка ничего не делает
 		return undefined;
 	}
 	
 	removeActor(actor){
 		const indexActor = this.actors.indexOf(actor);
+		// используйте !== и === для сравнения
 		if(indexActor != -1){
 			this.actors.splice(indexActor, 1);
 		}
 	}
 	
 	noMoreActors(type){
+		// лучше проверить в конструкторе
 		if(this.actors){
+			// вместо for of лучше использовать for или .forEach
+			// тут нужно использовать метод массивв
 			for(const actor of this.actors){
 				if(actor.type === type){
 					return false;
@@ -220,10 +240,12 @@ class LevelParser{
 	}
 	
 	actorFromSymbol(symbol){
+		// эта проверка лишняя
 		if(typeof symbol === 'undefined'){
 			return undefined;
 		}
 		
+		// проверка в конструкторе / значение по-умолчанию
 		if(typeof this.dictionary ===  'undefined'){
 			return undefined;
 		}
@@ -237,6 +259,7 @@ class LevelParser{
 	}
 	
 	createGrid(strings){
+		// этот метод лучше переписать с использованием map
 		const array = [];
 		let i = 0;
 		
@@ -244,6 +267,10 @@ class LevelParser{
 			array[i] = [];
 			for(let j = 0; j < string.length; j++){
 				const symbol = string.charAt(j);
+				// эти проверки тут ненужны,
+				// если появится больше препятствий
+				// и вы добавите их в symbols из obstacleFromSymbol
+				// то работать они не будут, пока вы не исправите условия здесь
 				if(symbol === 'o' || symbol === 'x' || symbol === '!'){
 					array[i].push(this.obstacleFromSymbol(symbol));
 				}else{
@@ -269,8 +296,11 @@ class LevelParser{
 				if(typeof actorCtr === 'function'){
 					const actor = new actorCtr();
 					if(actor instanceof Actor){
+						// обхект создаётся второй раз
 						array[j] = new actorCtr();
+						// pos должно задаваться в конструкторе
 						array[j].pos = new Vector(i,k);
+						// если использовать push, то эту переменную можно убрать
 						j++;
 					}
 				}
@@ -281,6 +311,7 @@ class LevelParser{
 	}
 	
 	parse(strings){
+		// форматирование
 	return new Level(this.createGrid(strings), this.createActors(strings));
 	}
 }
@@ -341,6 +372,7 @@ class FireRain extends Fireball{
 
 class Coin extends Actor{
 	constructor(pos=new Vector(1,1)){
+		// лучше использовать метод класса Vector
 		super(new Vector(pos.x + 0.2, pos.y + 0.1), new Vector(0.6,0.6));
 		this.initPos = pos;
 		this.springSpeed = 8;
