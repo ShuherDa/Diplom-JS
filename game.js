@@ -68,95 +68,33 @@ class Actor{
 			return false;
 		}
 		
-		// дальше слишком много условий
-		// тут простой алгоритм:
-		// если переданный объект выше, ниже, левее или правее данного,
-		// то они не пересекаются
-		if(actor.size.x < 0 || actor.size.y < 0){
-			return false;
-		}
-		
-		if((this.pos.x === actor.pos.x + actor.size.x)||(actor.pos.x === this.pos.x + actor.size.x)||
-		(this.pos.y === actor.pos.y + actor.size.y)||(actor.pos.y === this.pos.y + actor.size.y)){
-			return false;
-		}
-		 
-		 return (this.pos.x <= actor.pos.x + actor.size.x && this.pos.x >= actor.pos.x && 
-		 this.pos.y <= actor.pos.y + actor.size.y && this.pos.y >= actor.pos.y) ||
-		 (this.pos.x <= actor.pos.x + actor.size.x && this.pos.x >= actor.pos.x && 
-		 this.pos.y + this.size.y <= actor.pos.y + actor.size.y && this.pos.y + this.size.y >= actor.pos.y) ||
-		 (this.pos.x + this.size.x <= actor.pos.x + actor.size.x && this.pos.x + this.size.x >= actor.pos.x && 
-		 this.pos.y <= actor.pos.y + actor.size.y && this.pos.y >= actor.pos.y) ||
-		 (this.pos.x + this.size.x <= actor.pos.x + actor.size.x && this.pos.x + this.size.x >= actor.pos.x && 
-		 this.pos.y + this.size.y <= actor.pos.y + actor.size.y && this.pos.y + this.size.y >= actor.pos.y) ||
-		 (actor.pos.x <= this.pos.x + this.size.x && actor.pos.x >= this.pos.x && 
-		 actor.pos.y <= this.pos.y + this.size.y && actor.pos.y >= this.pos.y) ||
-		 (actor.pos.x <= this.pos.x + this.size.x && actor.pos.x >= this.pos.x && 
-		 actor.pos.y + actor.size.y <= this.pos.y + this.size.y && actor.pos.y + actor.size.y >= this.pos.y) ||
-		 (actor.pos.x + actor.size.x <= this.pos.x + this.size.x && actor.pos.x + actor.size.x >= this.pos.x && 
-		 actor.pos.y <= this.pos.y + this.size.y && actor.pos.y >= this.pos.y) ||
-		 (actor.pos.x + actor.size.x <= this.pos.x + this.size.x && actor.pos.x + actor.size.x >= this.pos.x && 
-		 actor.pos.y + actor.size.y <= this.pos.y + this.size.y && actor.pos.y + actor.size.y >= this.pos.y);
+        return this.right > actor.left &&
+            this.left < actor.right &&
+            this.top < actor.bottom &&
+            this.bottom > actor.top;
 	}
 }
 
 class Level{
 	constructor(grid=[], actors=[]){
-		// для поиска объектов в массиве есть специальный метод
-		for(const actor of actors){
-			if(actor.type === 'player'){
-				this.player = actor;
-				break;
-			}
-		}
-	
-		this.grid = grid;
-		this.actors = actors;
-		this.height = grid.length;
-		this.width = 0;
-		
-		// максимальную длину лучше найти с помощью reduce или map + Math.max
-		if(grid.length !== 0){
-			for(const arr of this.grid){
-				if(typeof arr != 'undefined'){
-					if(this.width < arr.length){
-						this.width = arr.length;
-					}
-				}
-			}
-		}
-		
-		this.status = null;
-		this.finishDelay = 1;
+        this.actors = actors.slice();
+        this.grid = grid.slice();
+        this.height = this.grid.length;
+        this.width = this.height === 0 ? 0 : Math.max(...grid.map(elem => elem.length));
+        this.status = null;
+        this.finishDelay = 1;
+        this.player = this.actors.find(actor => actor.type === 'player');
 	}
 	
 	isFinished(){
-		// скобки можно убрать
-		return(this.status != null && this.finishDelay < 0);
+		return this.status != null && this.finishDelay < 0;
 	}
 	
 	actorAt(actor){
 		if(!(actor instanceof Actor)){
 			throw new Error('Движущийся объект должен иметь тип Actor');
 		}
-		
-		// если this.grid не будет заполнено работать ничего не будет,
-		// поэтому лучше сделать эту проверку один раз в конструкторе
-		// (или использовать значение по-умолчанию),
-		// а не проверять перед каждым использованием
-		if(this.grid === undefined ){
-			return undefined;
-		}
-		
-		// для поиска обхекта в массиве есть специальный метод
-		for(const act of this.actors){
-			if (typeof act !='undefined' && actor.isIntersect(act)){
-				return act;
-			}
-		}
-		// эта строчка ничего не делает,
-		// функция и так возвращает undefined, если не указано иное
-		return undefined;
+		return this.actors.find(elem => elem.isIntersect(actor));
 	}
 	
 	obstacleAt(pos, size){
@@ -184,36 +122,22 @@ class Level{
 		for (let y = yStart; y < yEnd; y++) {
 			for (let x = xStart; x < xEnd; x++) {
 				const obstacle = this.grid[y][x];
-				// я бы проверил задесь просто if (obstacle) {
-				if (typeof obstacle !== 'undefined') {
+				 if (obstacle) {	
 					return obstacle;
 				}
 			}
 		}
-		// строчка ничего не делает
-		return undefined;
 	}
 	
 	removeActor(actor){
 		const indexActor = this.actors.indexOf(actor);
-		// используйте !== и === для сравнения
-		if(indexActor != -1){
+		if(indexActor !== -1){
 			this.actors.splice(indexActor, 1);
 		}
 	}
 	
 	noMoreActors(type){
-		// лучше проверить в конструкторе
-		if(this.actors){
-			// вместо for of лучше использовать for или .forEach
-			// тут нужно использовать метод массивв
-			for(const actor of this.actors){
-				if(actor.type === type){
-					return false;
-				}
-			}
-		}
-		return true;
+		return !this.actors.some((actor) => actor.type === type)
 	}
 	
 	playerTouched(type, actor){
@@ -235,21 +159,11 @@ class Level{
 }
 
 class LevelParser{
-	constructor(dictionary){
+	constructor(dictionary = {}){
 		this.dictionary = dictionary;
 	}
 	
 	actorFromSymbol(symbol){
-		// эта проверка лишняя
-		if(typeof symbol === 'undefined'){
-			return undefined;
-		}
-		
-		// проверка в конструкторе / значение по-умолчанию
-		if(typeof this.dictionary ===  'undefined'){
-			return undefined;
-		}
-		
 		return this.dictionary[symbol];
 	}
 	
@@ -259,60 +173,26 @@ class LevelParser{
 	}
 	
 	createGrid(strings){
-		// этот метод лучше переписать с использованием map
-		const array = [];
-		let i = 0;
-		
-		for(const string of strings){
-			array[i] = [];
-			for(let j = 0; j < string.length; j++){
-				const symbol = string.charAt(j);
-				// эти проверки тут ненужны,
-				// если появится больше препятствий
-				// и вы добавите их в symbols из obstacleFromSymbol
-				// то работать они не будут, пока вы не исправите условия здесь
-				if(symbol === 'o' || symbol === 'x' || symbol === '!'){
-					array[i].push(this.obstacleFromSymbol(symbol));
-				}else{
-					array[i].push(undefined);
-				}
-			}
-			
-			i++;
-		}
-		
-		return array;
+		return strings.map(line => line.split('')).map(line => line.map(line => this.obstacleFromSymbol(line)));
 	}
 	
 	createActors(strings){
-		const array = [];
-		let j = 0;
-		
-		for(let k = 0; k < strings.length; k++ ){
-			const string = strings[k];
-			for(let i = 0; i < string.length; i++){
-				const symbol = string.charAt(i);
-				const actorCtr = this.actorFromSymbol(symbol);
-				if(typeof actorCtr === 'function'){
-					const actor = new actorCtr();
-					if(actor instanceof Actor){
-						// обхект создаётся второй раз
-						array[j] = new actorCtr();
-						// pos должно задаваться в конструкторе
-						array[j].pos = new Vector(i,k);
-						// если использовать push, то эту переменную можно убрать
-						j++;
-					}
-				}
-			}
-		}
-		
-		return array;
+        return strings.reduce((rez, itemY, y) => {
+            itemY.split('').forEach((itemX, x) => {
+                const constructor = this.actorFromSymbol(itemX);
+                if (typeof constructor === 'function') {
+                    const actor = new constructor(new Vector(x, y));
+                    if (actor instanceof Actor) {
+                        rez.push(actor);
+                    }
+                }
+            });
+            return rez;
+        }, []);
 	}
 	
 	parse(strings){
-		// форматирование
-	return new Level(this.createGrid(strings), this.createActors(strings));
+		return new Level(this.createGrid(strings), this.createActors(strings));
 	}
 }
 
@@ -371,9 +251,8 @@ class FireRain extends Fireball{
 }
 
 class Coin extends Actor{
-	constructor(pos=new Vector(1,1)){
-		// лучше использовать метод класса Vector
-		super(new Vector(pos.x + 0.2, pos.y + 0.1), new Vector(0.6,0.6));
+	constructor(pos=new Vector(0,0)){
+		super(pos.plus(new Vector(0.2, 0.1)), new Vector(0.6, 0.6));
 		this.initPos = pos;
 		this.springSpeed = 8;
 		this.springDist = 0.07;
