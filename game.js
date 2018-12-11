@@ -68,6 +68,7 @@ class Actor{
 			return false;
 		}
 		
+		// форматирование
         return this.right > actor.left &&
             this.left < actor.right &&
             this.top < actor.bottom &&
@@ -77,9 +78,12 @@ class Actor{
 
 class Level{
 	constructor(grid=[], actors=[]){
+		// форматирование
         this.actors = actors.slice();
         this.grid = grid.slice();
         this.height = this.grid.length;
+        // здесь можно убрать проверку,
+        // если добавить 0 в список аргументов Math.max
         this.width = this.height === 0 ? 0 : Math.max(...grid.map(elem => elem.length));
         this.status = null;
         this.finishDelay = 1;
@@ -168,6 +172,8 @@ class LevelParser{
 	}
 	
 	obstacleFromSymbol(symbol){
+		// я бы сделал это полем класса или вынес за пределы класса,
+		// чтобы каждый раз объект не создавать
 		const symbols = { 'x': 'wall', '!': 'lava' };
 		return symbols[symbol];
 	}
@@ -253,6 +259,7 @@ class FireRain extends Fireball{
 class Coin extends Actor{
 	constructor(pos=new Vector(0,0)){
 		super(pos.plus(new Vector(0.2, 0.1)), new Vector(0.6, 0.6));
+		// поле не используется
 		this.initPos = pos;
 		this.springSpeed = 8;
 		this.springDist = 0.07;
