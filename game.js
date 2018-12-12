@@ -185,11 +185,11 @@ class LevelParser{
                     const actor = new constructor(new Vector(x, y));
                     if (actor instanceof Actor) {
                         rez.push(actor);
-                    }
-                }
-            });
-            return rez;
-        }, []);
+					}
+				}
+			});
+			return rez;
+		}, []);
 	}
 	
 	parse(strings){
@@ -238,7 +238,7 @@ class VerticalFireball extends Fireball{
 
 class FireRain extends Fireball{
 	constructor(pos = new Vector(0,0)){
-	super(pos, new Vector(0,3));
+		super(pos, new Vector(0,3));
 		this.initPos = pos;
 	}
 	
@@ -273,8 +273,8 @@ class Coin extends Actor{
 	}
 
 	getNextPosition(time = 1) {
-        this.updateSpring(time);
-        return this.startPos.plus(this.getSpringVector());
+		this.updateSpring(time);
+		return this.startPos.plus(this.getSpringVector());
     }
 
 	act(time){
